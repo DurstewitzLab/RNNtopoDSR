@@ -1,0 +1,43 @@
+{   
+    "experiment": "Lorenz63",
+    "name": "test",
+    "path_to_data": "example_data/lorenz63.npy",
+    "run": 1,
+
+    "model": "PLRNN",
+    "observation_model": "Identity",
+    "latent_dim": 50,
+    "optional_model_args": [],
+
+    "optimizer": "RADAM",
+    "gradient_clipping_norm": 0.0,
+    "start_lr": 1e-2,
+    "end_lr": 1e-5, 
+    "batch_size": 16,
+    "sequence_length": 200,
+    "teacher_forcing_interval": 16,
+
+    "epochs": 2000,
+    "batches_per_epoch": 50,
+    "scalar_saving_interval": 25,
+    "image_saving_interval": 5000,
+    "gaussian_noise_level": 0.05,  
+
+    "D_stsp_bins": 30,
+    "D_stsp_scaling": 0.3,
+    "PSE_smoothing": 20.0,
+    "PE_n": 20,
+
+    "small_world": "",
+    "K": 4,
+    "p": 0.1,
+    
+    "prune_steps": 0,
+    "prune_value": 0.0,
+    "prune_measure": "geometry",
+    
+    "initial_mask_path" : "",
+    "initial_mask_run" : "",
+    "initial_mask_ind" : 0,
+    "initial_mask_params": ""
+}
