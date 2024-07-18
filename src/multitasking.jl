@@ -147,7 +147,7 @@ function main_routine(args::AbstractDict)
     O = initialize_observation_model(args, D)  # Observation model
 
     #Introduce structure in weight matrix
-    if args["small_world"] == "custom" && isfile(joinpath(args["initial_mask_path"],args["initial_mask_run"],"prune_model_"*string(args["initial_mask_ind"])*".bson"))
+    if args["small_world"] == "custom" && isfile(joinpath(args["initial_mask_path"],args["initial_mask_run"],"prune_model_"*string(args["initial_mask_ind"])*".bson")) #use custom mask from a pruned model
         m_temp, _ = load_model(joinpath(args["initial_mask_path"],args["initial_mask_run"],"prune_model_"*string(args["initial_mask_ind"])*".bson"))
         plrnn.W_mask = copy(m_temp.W_mask)
         if isfile(args["initial_mask_params"])
@@ -158,7 +158,7 @@ function main_routine(args::AbstractDict)
             println("Using custom mask strucutre with ",sum(plrnn.W_mask)," trainable parameters")
         end
     elseif args["small_world"] != ""
-        graph = getfield(Main, Symbol(args["small_world"]*"_graph"))
+        graph = getfield(Main, Symbol(args["small_world"]*"_graph")) #Get graph model
         plrnn.W_mask = copy(graph(args["latent_dim"], args["K"], args["p"], size(D.X)[2]))
         println("Using "*args["small_world"]*" graph structure with ",sum(plrnn.W_mask)," trainable parameters")
     end
@@ -185,7 +185,7 @@ function main_routine(args::AbstractDict)
 
     train_!(plrnn, O, D, opt, args, save_path)
 
-
+    # Iterative pruning protocol
     if args["prune_steps"] > 0 && args["model"] == "PLRNN"
         pruning_metrics = []
 
@@ -200,14 +200,15 @@ function main_routine(args::AbstractDict)
                 push!(pruning_metrics, [NaN,NaN,NaN,NaN]) 
             end
             plrnn, O = load_model(joinpath("Results", args["experiment"], args["name"], NetworkTopology.Utilities.format_run_ID(args["run"]), "checkpoints", "model_"*string(best_id*args["scalar_saving_interval"])*".bson"))
-            save_model([plrnn, O], joinpath(save_path, "prune_model_"*string(i)*".bson"),)
-            save(joinpath("Results", args["experiment"], args["name"], Utilities.format_run_ID(args["run"]), "prune_metrics.jld"), "prune_metrics", pruning_metrics)
+            save_model([plrnn, O], joinpath(save_path, "prune_model_"*string(i)*".bson"),) #Load and save best model
+            save(joinpath("Results", args["experiment"], args["name"], Utilities.format_run_ID(args["run"]), "prune_metrics.jld"), "prune_metrics", pruning_metrics) # save metrics
 
             #Pruning procedure
             pruning_measure = getfield(Main, Symbol(args["prune_measure"]))
-            mask = pruning_measure(args, plrnn, O, D)
+            mask = pruning_measure(args, plrnn, O, D) # generate mask
             println("Using "*args["prune_measure"]*" pruning")
 
+            # Initialize pruned model
             plrnn, O = load_model(joinpath("Results", args["experiment"], args["name"], NetworkTopology.Utilities.format_run_ID(args["run"]), "checkpoints", "model_0.bson"))
             plrnn.W_mask = mask
             plrnn.W .= plrnn.W .* mask

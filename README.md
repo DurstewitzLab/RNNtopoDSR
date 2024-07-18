@@ -1,4 +1,4 @@
-# Optimal Recurrent Network Topologies for Dynamical Systems Reconstruction [ICML 2024]
+# Optimal Recurrent Network Topologies for Dynamical Systems Reconstruction [ICML 2024 Poster]
 
 # 1. Getting started
 To install the package, clone the repostiory and `cd` into the project folder:
@@ -45,7 +45,7 @@ $ julia -t2 --project ubermain.jl -p 10 -r 5
 will queue 5 runs for each setting and use 10 parallel workers with each 2 threads.
 
 ## 2.3 Evaluating models
-Evaluating trained model is done via `evaluate.jl`. Here, the path to the (test) data, the model experiment directory, and the settings to be passed to the various metrics employed, have to be provided.
+Evaluating trained models is done via `evaluate.jl`. Providing all information in the [default settings](settings/defaults.json) file, including file/model paths, enables evaluation of single models or a whole iterative pruning procedure done on the PLRNN.
 
 # Specifics
 
@@ -75,3 +75,28 @@ To apply iterative pruning to the PLRNN one needs to set the model to &rarr; [`P
 
 # Versions
 - >Julia 1.9
+
+
+# Citation
+If you find the repository and/or paper helpful for your own research, please cite [our work](https://proceedings.mlr.press/v235/hemmer24a.html).
+```
+@InProceedings{pmlr-v235-hemmer24a,
+  title = 	 {Optimal Recurrent Network Topologies for Dynamical Systems Reconstruction},
+  author =       {Hemmer, Christoph J\"{u}rgen and Brenner, Manuel and Hess, Florian and Durstewitz, Daniel},
+  booktitle = 	 {Proceedings of the 41st International Conference on Machine Learning},
+  pages = 	 {18174--18204},
+  year = 	 {2024},
+  editor = 	 {Salakhutdinov, Ruslan and Kolter, Zico and Heller, Katherine and Weller, Adrian and Oliver, Nuria and Scarlett, Jonathan and Berkenkamp, Felix},
+  volume = 	 {235},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {21--27 Jul},
+  publisher =    {PMLR},
+  pdf = 	 {https://raw.githubusercontent.com/mlresearch/v235/main/assets/hemmer24a/hemmer24a.pdf},
+  url = 	 {https://proceedings.mlr.press/v235/hemmer24a.html},
+  abstract = 	 {In dynamical systems reconstruction (DSR) we seek to infer from time series measurements a generative model of the underlying dynamical process. This is a prime objective in any scientific discipline, where we are particularly interested in parsimonious models with a low parameter load. A common strategy here is parameter pruning, removing all parameters with small weights. However, here we find this strategy does not work for DSR, where even low magnitude parameters can contribute considerably to the system dynamics. On the other hand, it is well known that many natural systems which generate complex dynamics, like the brain or ecological networks, have a sparse topology with comparatively few links. Inspired by this, we show that <em>geometric pruning</em>, where in contrast to magnitude-based pruning weights with a low contribution to an attractor’s geometrical structure are removed, indeed manages to reduce parameter load substantially without significantly hampering DSR quality. We further find that the networks resulting from geometric pruning have a specific type of topology, and that this topology, and not the magnitude of weights, is what is most crucial to performance. We provide an algorithm that automatically generates such topologies which can be used as priors for generative modeling of dynamical systems by RNNs, and compare it to other well studied topologies like small-world or scale-free networks.}
+}
+```
+
+
+# Acknowledgements
+This work was funded by the German Research Foundation (DFG) through individual grant Du 354/15-1 to DD, and within Germany’s Excellence Strategy EXC 2181/1 - 390900948 (STRUCTURES).

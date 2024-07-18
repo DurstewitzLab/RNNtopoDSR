@@ -39,7 +39,11 @@ add_gaussian_noise(X::AbstractArray{T, N}, noise_level::T) where {T, N} =
 
 
 """
-Watts-Strogatz graph structure
+    watts_strogatz_graph(N, K, p, dims)
+
+N: number of nodes in graph
+K: degree of edges
+p: rewiring probability
 """
 
 function watts_strogatz_graph(N, K, p, dims)
@@ -51,7 +55,10 @@ function watts_strogatz_graph(N, K, p, dims)
 end
 
 """
-Barabasi-albert graph structure
+    barabasi_albert_graph(N, K, p, dims)
+
+N: number of nodes in graph
+K: degree of edges
 """
 
 function barabasi_albert_graph(N, K, p, dims)
@@ -65,7 +72,10 @@ function barabasi_albert_graph(N, K, p, dims)
 end
 
 """
-Erdos-Renyi graph structure
+    erdos_renyi_graph(N, K, p, dims)
+
+N: number of nodes in graph
+K: number of edges
 """
 
 function erdos_renyi_graph(N, K, p, dims)
@@ -77,7 +87,11 @@ function erdos_renyi_graph(N, K, p, dims)
 end
 
 """
-GeoHub graph structure
+    GeoHub_graph(N, K, p, dims)
+
+N: number of nodes in graph
+K: mean in/out degree of graph
+dims: data dimension
 """
 
 # Calculate connection probabilities
@@ -104,17 +118,17 @@ end
 function GeoHub_graph(N, K, p, dims)
     K = Int(round(K/2))
     
-    G = complete_graph(dims)
+    G = complete_graph(dims) #Initialize graph
     G = SimpleDiGraph(G)
     add_vertices!(G,N-dims)
 
     #Generate ingoing connections
     for i in 1:N
         probs = graph_probs(G,K,dims)
-        dsts = sample(1:N,Weights(probs),K,replace=false)
+        dsts = sample(1:N,Weights(probs),K,replace=false) # sample node destiantions according to probabilities
         for dst in dsts
             test_it = 1
-            while (has_edge(G,i,dst) || dst==i) && test_it<(N*10) dst = sample(1:N,Weights(probs)); test_it+=1 end
+            while (has_edge(G,i,dst) || dst==i) && test_it<(N*10) dst = sample(1:N,Weights(probs)); test_it+=1 end # Check if destiantion is available
             add_edge!(G,i,dst)
         end
     end
@@ -122,10 +136,10 @@ function GeoHub_graph(N, K, p, dims)
     #Generating outgoing connections
     for i in 1:N
         probs = graph_probs(G,K,dims,true)
-        srcs = sample(1:N,Weights(probs),K,replace=false)
+        srcs = sample(1:N,Weights(probs),K,replace=false) # sample node sources according to probabilities
         for src in srcs
             test_it = 1
-            while (has_edge(G,src,i) || src==i) && test_it<(N*10) src = sample(1:N,Weights(probs)); test_it+=1 end
+            while (has_edge(G,src,i) || src==i) && test_it<(N*10) src = sample(1:N,Weights(probs)); test_it+=1 end # Check if source is available
             add_edge!(G,src,i)
         end
     end
@@ -139,13 +153,19 @@ end
 
 
 """
-Weight structure calculation (measures L,C,Deg,Centralitys)
+Weight structure calculation
+
+Calculated measures are:
+Average path length L
+Clustering C
+Degree D
 """
 
 function clustering_coefficient(Adj::AbstractMatrix)
     cs = []
     ks = []
 
+    # Possible number of triangles
     A = Adj .- Diagonal(Adj)
     for i in 1:size(A)[1]
         k_tot=sum(A[i,:])+sum(A[:,i])
@@ -153,6 +173,7 @@ function clustering_coefficient(Adj::AbstractMatrix)
         push!(ks,k_tot*(k_tot-1)-2*k_a)
     end
 
+    # Actual number of triangles
     for i in 1:size(A)[1]
         temp = 0
         for j in 1:size(A)[1]
@@ -183,10 +204,10 @@ function graph_structure(adj_matrix)
 end
 
 """
-Small world index
+Small world index (SWI)
 """
 
-function random_reference(G)
+function random_reference(G) # Produce random lattice graph with same amount of edges as in G
     
     n_edges = Int(round(length(edges(G))/2))
     n_nodes = length(vertices(G))
@@ -196,7 +217,7 @@ function random_reference(G)
     return Matrix(Graphs.adjacency_matrix(G_ref))
 end
 
-function lattice_reference(G)
+function lattice_reference(G) # Produce ring lattice graph with same amount of connections as in G
     graph = Graphs.SimpleGraph(nv(G))
 
     v = 1
@@ -218,13 +239,13 @@ function lattice_reference(G)
     return Int.(Matrix(Graphs.LinAlg.adjacency_matrix(graph)) .> 0)
 end
 
-function SWI(G_M)
+function SWI(G_M) # Small world index (SWI)
     L,C,_,_,_,_=graph_structure(G_M)
 
     G = DiGraph(Int.(abs.(G_M) .> 0))
 
     L_R = []; L_L=[]; C_L=[]; C_R=[]
-    for i in 1:10
+    for i in 1:10 # Avergae over multiple reference graphs
         G_L = lattice_reference(G)
         G_R = random_reference(G)
         L_L_s,C_L_s,_,_,_,_=graph_structure(G_L)
